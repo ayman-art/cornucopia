@@ -9,20 +9,35 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - run: npm install
-      - run: mkdir -p output
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
 
-      - name: Generate SBOMs
-        run: |
-          npx @cyclonedx/cyclonedx-npm --output-format XML --output-file output/bom-card.xml ./scripts
-          npx @cyclonedx/cyclonedx-npm --output-format XML --output-file output/bom-website.xml ./cornucopia.owasp.org
-          npx @cyclonedx/cyclonedx-npm --output-format XML --output-file output/bom-engine.xml ./copi.owasp.org
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install cdxgen
+        run: npm install -g @cyclonedx/cdxgen
+
+      - name: Create output directory
+        run: mkdir -p output
+
+      - name: Generate SBOM for scripts
+        run: cdxgen -r ./scripts -o output/bom-card.json
+
+      - name: Generate SBOM for website
+        run: cdxgen -r ./cornucopia.owasp.org -o output/bom-website.json
+
+      - name: Generate SBOM for engine
+        run: cdxgen -r ./copi.owasp.org -o output/bom-engine.json
 
       - uses: actions/upload-artifact@v4
         with:
           name: sboms
-          path: output/*.xml
+          path: output/*.json
