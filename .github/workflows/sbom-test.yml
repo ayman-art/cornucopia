@@ -1,0 +1,27 @@
+name: SBOM Test
+on:
+  push:
+    branches:
+      - sbom-test
+jobs:
+  generate-sboms:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: mkdir -p output
+      - uses: CycloneDX/cdxgen-action@v3
+        with:
+          project-path: ./scripts
+          output: output/bom-card.xml
+      - uses: CycloneDX/cdxgen-action@v3
+        with:
+          project-path: ./cornucopia.owasp.org
+          output: output/bom-website.xml
+      - uses: CycloneDX/cdxgen-action@v3
+        with:
+          project-path: ./copi.owasp.org
+          output: output/bom-engine.xml
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sboms
+          path: output/*.xml
