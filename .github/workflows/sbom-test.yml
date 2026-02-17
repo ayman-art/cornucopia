@@ -14,11 +14,6 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Python dependencies
-        run: |
-          docker run --rm -v ${PWD}:/workspace cornucopia-converter run pip install -r requirements.txt
-          docker run --rm -v ${PWD}:/workspace cornucopia-converter install --dev
-
       - name: Install cdxgen
         run: npm install -g @cyclonedx/cdxgen
 
@@ -26,7 +21,10 @@ jobs:
         run: mkdir -p output
 
       - name: Generate SBOM for scripts
-        run: cdxgen -r ./scripts -o output/bom-card.json
+        uses: CycloneDX/cdxgen-action@5668048b6479c5ee557eec3e1766132a4661681f # v1.0.0
+        with:
+          allow-ghsas: GHSA-vg6x-rcgg-rjx6
+          output: "./output/bom-card.json"
 
       - name: Generate SBOM for website
         run: cdxgen -r ./cornucopia.owasp.org -o output/bom-website.json
@@ -34,7 +32,7 @@ jobs:
       - name: Generate SBOM for engine
         run: cdxgen -r ./copi.owasp.org -o output/bom-engine.json
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: sboms
           path: output/*.json
