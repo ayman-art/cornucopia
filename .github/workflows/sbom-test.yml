@@ -13,22 +13,30 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Install cdxgen and cyclonedx-cli
-        run: npm install -g @cyclonedx/cdxgen @cyclonedx/cyclonedx-cli
+
+      - name: Install dependencies
+        run: |
+          npm install -g @cyclonedx/cdxgen
+          dotnet tool install --global CycloneDX
+
       - name: Create output directory
         run: mkdir -p output
+
       - name: Generate SBOM for scripts
         run: |
           cdxgen -r ./scripts -o output/bom-card.json
           cyclonedx convert --input-file output/bom-card.json --input-format json --output-file output/bom-card.xml --output-format xml
+          
       - name: Generate SBOM for website
         run: |
           cdxgen -r ./cornucopia.owasp.org -o output/bom-website.json
           cyclonedx convert --input-file output/bom-website.json --input-format json --output-file output/bom-website.xml --output-format xml
+
       - name: Generate SBOM for engine
         run: |
           cdxgen -r ./copi.owasp.org -o output/bom-engine.json
           cyclonedx convert --input-file output/bom-engine.json --input-format json --output-file output/bom-engine.xml --output-format xml
+
       - uses: actions/upload-artifact@v4
         with:
           name: sboms
