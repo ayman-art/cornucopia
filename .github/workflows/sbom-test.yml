@@ -21,13 +21,13 @@ jobs:
         run: mkdir -p output
 
       - name: Generate SBOM for scripts
-        run: cdxgen -r ./scripts -o output/bom-card.xml
+        run: cdxgen -r ./scripts -o output/bom-card.xml -f xml
 
       - name: Generate SBOM for website
-        run: cdxgen -r ./cornucopia.owasp.org -o output/bom-website.xml
+        run: cdxgen -r ./cornucopia.owasp.org -o output/bom-website.xml -f xml
 
       - name: Generate SBOM for engine
-        run: cdxgen -r ./copi.owasp.org -o output/bom-engine.xml
+        run: cdxgen -r ./copi.owasp.org -o output/bom-engine.xml -f xml
 
       - uses: actions/upload-artifact@v4
         with:
