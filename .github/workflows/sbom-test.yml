@@ -2,7 +2,7 @@ name: SBOM Test
 on:
   push:
     branches:
-      - sbom-test
+      - feat/sbom
 jobs:
   generate-sboms:
     runs-on: ubuntu-latest
