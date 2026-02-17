@@ -9,29 +9,31 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install cdxgen
-        run: npm install -g @cyclonedx/cdxgen
-
-      - name: Create output directory
-        run: mkdir -p output
-
       - name: Generate SBOM for scripts
-        uses: CycloneDX/cdxgen-action@5668048b6479c5ee557eec3e1766132a4661681f # v1.0.0
+        uses: CycloneDX/cdxgen-action@5668048b6479c5ee557eec3e1766132a4661681f
         with:
-          output: "./output/bom-card.xml"
+          path: ./scripts
+          output: ./output/bom-card.xml
+          format: xml
+          type: files
 
       - name: Generate SBOM for website
-        run: cdxgen -r ./cornucopia.owasp.org -o output/bom-website.json
+        uses: CycloneDX/cdxgen-action@5668048b6479c5ee557eec3e1766132a4661681f
+        with:
+          path: ./cornucopia.owasp.org
+          output: ./output/bom-website.xml
+          format: xml
+          type: files
 
       - name: Generate SBOM for engine
-        run: cdxgen -r ./copi.owasp.org -o output/bom-engine.json
+        uses: CycloneDX/cdxgen-action@5668048b6479c5ee557eec3e1766132a4661681f
+        with:
+          path: ./copi.owasp.org
+          output: ./output/bom-engine.xml
+          format: xml
+          type: files
 
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - uses: actions/upload-artifact@v4
         with:
           name: sboms
-          path: output/*
+          path: output/*.xml
