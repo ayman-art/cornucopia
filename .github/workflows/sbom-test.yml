@@ -14,30 +14,15 @@ jobs:
           node-version: '20'
 
       - run: npm install
+      - run: mkdir -p output
 
-      - name: Create output directory
-        run: mkdir -p output
+      - name: Generate SBOMs
+        run: |
+          npx @cyclonedx/cyclonedx-npm --output-format XML --output-file output/bom-card.xml ./scripts
+          npx @cyclonedx/cyclonedx-npm --output-format XML --output-file output/bom-website.xml ./cornucopia.owasp.org
+          npx @cyclonedx/cyclonedx-npm --output-format XML --output-file output/bom-engine.xml ./copi.owasp.org
 
-      - name: Generate SBOM for scripts
-        uses: CycloneDX/gh-node-module-generatebom@v1
-        with:
-          path: './scripts'
-          output: './output/bom-card.xml'
-
-      - name: Generate SBOM for website
-        uses: CycloneDX/gh-node-module-generatebom@v1
-        with:
-          path: './cornucopia.owasp.org'
-          output: './output/bom-website.xml'
-
-      - name: Generate SBOM for engine
-        uses: CycloneDX/gh-node-module-generatebom@v1
-        with:
-          path: './copi.owasp.org'
-          output: './output/bom-engine.xml'
-
-      - name: Upload SBOMs
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: sboms
           path: output/*.xml
