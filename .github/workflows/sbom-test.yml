@@ -23,8 +23,7 @@ jobs:
       - name: Generate SBOM for scripts
         uses: CycloneDX/cdxgen-action@5668048b6479c5ee557eec3e1766132a4661681f # v1.0.0
         with:
-          allow-ghsas: GHSA-vg6x-rcgg-rjx6
-          output: "./output/bom-card.json"
+          output: "./output/bom-card.xml"
 
       - name: Generate SBOM for website
         run: cdxgen -r ./cornucopia.owasp.org -o output/bom-website.json
@@ -35,4 +34,4 @@ jobs:
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: sboms
-          path: output/*.json
+          path: output/*
