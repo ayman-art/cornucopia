@@ -9,35 +9,35 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Install dependencies
-        run: |
-          npm install -g @cyclonedx/cdxgen
-          dotnet tool install --global CycloneDX
+      - run: npm install
 
       - name: Create output directory
         run: mkdir -p output
 
       - name: Generate SBOM for scripts
-        run: |
-          cdxgen -r ./scripts -o output/bom-card.json
-          cyclonedx convert --input-file output/bom-card.json --input-format json --output-file output/bom-card.xml --output-format xml
-          
+        uses: CycloneDX/gh-node-module-generatebom@v1
+        with:
+          path: './scripts'
+          output: './output/bom-card.xml'
+
       - name: Generate SBOM for website
-        run: |
-          cdxgen -r ./cornucopia.owasp.org -o output/bom-website.json
-          cyclonedx convert --input-file output/bom-website.json --input-format json --output-file output/bom-website.xml --output-format xml
+        uses: CycloneDX/gh-node-module-generatebom@v1
+        with:
+          path: './cornucopia.owasp.org'
+          output: './output/bom-website.xml'
 
       - name: Generate SBOM for engine
-        run: |
-          cdxgen -r ./copi.owasp.org -o output/bom-engine.json
-          cyclonedx convert --input-file output/bom-engine.json --input-format json --output-file output/bom-engine.xml --output-format xml
+        uses: CycloneDX/gh-node-module-generatebom@v1
+        with:
+          path: './copi.owasp.org'
+          output: './output/bom-engine.xml'
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload SBOMs
+        uses: actions/upload-artifact@v4
         with:
           name: sboms
           path: output/*.xml
