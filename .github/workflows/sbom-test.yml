@@ -8,19 +8,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: mkdir -p output
-      - uses: CycloneDX/cdxgen-action@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          project-path: ./scripts
-          output: output/bom-card.xml
-      - uses: CycloneDX/cdxgen-action@v3
-        with:
-          project-path: ./cornucopia.owasp.org
-          output: output/bom-website.xml
-      - uses: CycloneDX/cdxgen-action@v3
-        with:
-          project-path: ./copi.owasp.org
-          output: output/bom-engine.xml
+          node-version: '20'
+
+      - name: Install cdxgen
+        run: npm install -g @cyclonedx/cdxgen
+
+      - name: Create output directory
+        run: mkdir -p output
+
+      - name: Generate SBOM for scripts
+        run: cdxgen -r ./scripts -o output/bom-card.xml
+
+      - name: Generate SBOM for website
+        run: cdxgen -r ./cornucopia.owasp.org -o output/bom-website.xml
+
+      - name: Generate SBOM for engine
+        run: cdxgen -r ./copi.owasp.org -o output/bom-engine.xml
+
       - uses: actions/upload-artifact@v4
         with:
           name: sboms
