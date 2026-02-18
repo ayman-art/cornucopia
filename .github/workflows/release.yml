@@ -99,6 +99,18 @@
               zip -r output/owasp_cornucopia_webapp_2.2_pt-br.zip output/cornucopia_webapp/Links/* output/cornucopia_webapp/Fonts/* output/cornucopia_webapp/owasp_cornucopia_webapp_2.2_cards_bridge_pt-br.idml output/cornucopia_webapp/owasp_cornucopia_webapp_2.2_cards_bridge_qr_pt-br.idml output/cornucopia_webapp/owasp_cornucopia_webapp_2.2_cards_tarot_pt-br.idml output/cornucopia_webapp/owasp_cornucopia_webapp_2.2_cards_tarot_qr_pt-br.idml output/cornucopia_webapp/owasp_cornucopia_webapp_2.2_leaflet_bridge_pt-br.idml output/cornucopia_webapp/owasp_cornucopia_webapp_2.2_leaflet_tarot_pt-br.idml ./resources/templates/owasp_cornucopia_webapp_scoresheet.pdf
               zip -r output/owasp_cornucopia_webapp_2.2_pt-pt.zip output/cornucopia_webapp/Links/* output/cornucopia_webapp/Fonts/* output/cornucopia_webapp/owasp_cornucopia_webapp_2.2_cards_bridge_pt-pt.idml output/cornucopia_webapp/owasp_cornucopia_webapp_2.2_cards_bridge_qr_pt-pt.idml output/cornucopia_webapp/owasp_cornucopia_webapp_2.2_cards_tarot_pt-pt.idml output/cornucopia_webapp/owasp_cornucopia_webapp_2.2_cards_tarot_qr_pt-pt.idml output/cornucopia_webapp/owasp_cornucopia_webapp_2.2_leaflet_bridge_pt-pt.idml output/cornucopia_webapp/owasp_cornucopia_webapp_2.2_leaflet_tarot_pt-pt.idml ./resources/templates/owasp_cornucopia_webapp_scoresheet.pdf
               zip -r output/owasp_cornucopia_webapp_2.2_ru.zip output/cornucopia_webapp/Links/* output/cornucopia_webapp/Fonts/* output/cornucopia_webapp/owasp_cornucopia_webapp_2.2_cards_bridge_ru.idml output/cornucopia_webapp/owasp_cornucopia_webapp_2.2_cards_bridge_qr_ru.idml output/cornucopia_webapp/owasp_cornucopia_webapp_2.2_cards_tarot_ru.idml output/cornucopia_webapp/owasp_cornucopia_webapp_2.2_cards_tarot_qr_ru.idml output/cornucopia_webapp/owasp_cornucopia_webapp_2.2_leaflet_bridge_ru.idml output/cornucopia_webapp/owasp_cornucopia_webapp_2.2_leaflet_tarot_ru.idml ./resources/templates/owasp_cornucopia_webapp_scoresheet.pdf
+          # Generate SBOMs
+          - uses: actions/setup-node@v4
+            with:
+              node-version: '20'
+          - run: npm install -g @cyclonedx/cdxgen
+          - run: mkdir -p reports
+          - uses: CycloneDX/cdxgen-action@5668048b6479c5ee557eec3e1766132a4661681f
+            with:
+              output: "./reports/bom-card.xml"
+          - run: cdxgen -r ./cornucopia.owasp.org -o reports/bom-website.json
+          - run: cdxgen -r ./copi.owasp.org -o reports/bom-engine.json
+          
           - name: Create release
             uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
             with:
@@ -130,6 +142,7 @@
                 output/owasp_cornucopia_webapp_2.2_guide_bridge_pt-br.odt
                 output/owasp_cornucopia_webapp_2.2_guide_bridge_pt-pt.odt
                 output/owasp_cornucopia_webapp_2.2_guide_bridge_ru.odt
+                reports/*
                 resources/case/*\2.2_case_*
                 resources/case/*\1.1_case_*
                 source/*1\.1-*.yaml
