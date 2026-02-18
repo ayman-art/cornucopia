@@ -17,11 +17,14 @@ jobs:
       - name: Install cdxgen
         run: npm install -g @cyclonedx/cdxgen
 
+      - name: Install cyclonedx-py
+        run: pip install cyclonedx-bom
+
       - name: Create output directory
         run: mkdir -p output
 
       - name: Generate SBOM for scripts
-        run: cdxgen -o output/bom-card.json
+        run: cyclonedx-py requirements requirements.txt -o output/bom-card.json
 
       - name: Generate SBOM for website
         run: cdxgen -r ./cornucopia.owasp.org -o output/bom-website.json
