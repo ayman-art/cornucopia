@@ -21,9 +21,7 @@ jobs:
         run: mkdir -p output
 
       - name: Generate SBOM for scripts
-        uses: CycloneDX/cdxgen-action@5668048b6479c5ee557eec3e1766132a4661681f # v1.0.0
-        with:
-          output: "./output/bom-card.xml"
+        run: cdxgen -o output/bom-card.json
 
       - name: Generate SBOM for website
         run: cdxgen -r ./cornucopia.owasp.org -o output/bom-website.json
@@ -36,18 +34,18 @@ jobs:
           DT_URL: ${{ secrets.DEPENDENCYTRACK_URL }}
           DT_API_KEY: ${{ secrets.DEPENDENCYTRACK_API_KEY }}
         run: |
-          for bom in output/*.xml output/*.json; do
-            [[ "$bom" == *.xml ]] && CT="application/xml" || CT="application/json"
-            echo "--- Uploading $bom ($CT) ---"
+          for bom in output/*.json; do
+            echo "--- Uploading $bom ---"
             curl --location "$DT_URL/api/v1/bom" \
               --header "X-Api-Key: $DT_API_KEY" \
               --header "ngrok-skip-browser-warning: true" \
               --form "autoCreate=true" \
               --form "projectName=owasp-cornucopia" \
               --form "projectVersion=${{ github.ref_name }}" \
-              --form "bom=@$bom;type=$CT"
+              --form "bom=@$bom"
             echo ""
           done
+
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: sboms
