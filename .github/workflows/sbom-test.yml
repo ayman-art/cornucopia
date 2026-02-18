@@ -37,13 +37,19 @@ jobs:
           DT_URL: ${{ secrets.DEPENDENCYTRACK_URL }}
           DT_API_KEY: ${{ secrets.DEPENDENCYTRACK_API_KEY }}
         run: |
-          for bom in outputs/*.xml outputs/*.json; do
-            curl -s --location "$DT_URL/api/v1/bom" \
+          for bom in output/*.xml output/*.json; do
+            echo "Uploading $bom..."
+            response=$(curl -s -o /dev/null -w "%{http_code}" --location "$DT_URL/api/v1/bom" \
               --header "X-Api-Key: $DT_API_KEY" \
               --form "autoCreate=true" \
               --form "projectName=owasp-cornucopia" \
               --form "projectVersion=${{ github.ref_name }}" \
-              --form "bom=@$bom" || true
+              --form "bom=@$bom") || true
+            if [ "$response" == "200" ] || [ "$response" == "201" ]; then
+              echo "Successfully uploaded $bom"
+            else
+              echo "Failed to upload $bom (HTTP $response)"
+            fi
           done
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
