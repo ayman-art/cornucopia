@@ -31,28 +31,23 @@ jobs:
       - name: Generate SBOM for engine
         run: cdxgen -r ./copi.owasp.org -o output/bom-engine.json
 
-      
       - name: Upload SBOMs to Dependency-Track
         env:
           DT_URL: ${{ secrets.DEPENDENCYTRACK_URL }}
           DT_API_KEY: ${{ secrets.DEPENDENCYTRACK_API_KEY }}
         run: |
           for bom in output/*.xml output/*.json; do
-            echo "Uploading $bom..."
-            response=$(curl -s -o /dev/null -w "%{http_code}" --location "$DT_URL/api/v1/bom" \
+            [[ "$bom" == *.xml ]] && CT="application/xml" || CT="application/json"
+            echo "--- Uploading $bom ($CT) ---"
+            curl --location "$DT_URL/api/v1/bom" \
               --header "X-Api-Key: $DT_API_KEY" \
               --header "ngrok-skip-browser-warning: true" \
               --form "autoCreate=true" \
               --form "projectName=owasp-cornucopia" \
               --form "projectVersion=${{ github.ref_name }}" \
-              --form "bom=@$bom") || true
-            if [ "$response" == "200" ] || [ "$response" == "201" ]; then
-              echo "Successfully uploaded $bom"
-            else
-              echo "Failed to upload $bom (HTTP $response)"
-            fi
+              --form "bom=@$bom;type=$CT"
+            echo ""
           done
-
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: sboms
