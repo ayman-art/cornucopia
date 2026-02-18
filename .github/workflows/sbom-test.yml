@@ -37,13 +37,18 @@ jobs:
           DT_URL: ${{ secrets.DEPENDENCYTRACK_URL }}
           DT_API_KEY: ${{ secrets.DEPENDENCYTRACK_API_KEY }}
         run: |
+          declare -A NAMES=(
+            ["output/bom-card.json"]="owasp-cornucopia-card"
+            ["output/bom-engine.json"]="owasp-cornucopia-engine"
+            ["output/bom-website.json"]="owasp-cornucopia-website"
+          )
           for bom in output/*.json; do
-            echo "--- Uploading $bom ---"
+            echo "--- Uploading $bom as ${NAMES[$bom]} ---"
             curl --location "$DT_URL/api/v1/bom" \
               --header "X-Api-Key: $DT_API_KEY" \
               --header "ngrok-skip-browser-warning: true" \
               --form "autoCreate=true" \
-              --form "projectName=owasp-cornucopia" \
+              --form "projectName=${NAMES[$bom]}" \
               --form "projectVersion=${{ github.ref_name }}" \
               --form "bom=@$bom"
             echo ""
