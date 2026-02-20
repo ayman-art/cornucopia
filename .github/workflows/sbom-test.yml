@@ -6,6 +6,8 @@ on:
 jobs:
   generate-sboms:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -20,17 +22,17 @@ jobs:
       - name: Install cyclonedx-py
         run: pip install cyclonedx-bom
 
-      - name: Create output directory
-        run: mkdir -p output
+      - name: Create reports directory
+        run: mkdir -p reports
 
       - name: Generate SBOM for scripts
-        run: cyclonedx-py requirements requirements.txt -o output/bom-card.json
+        run: cyclonedx-py requirements requirements.txt -o reports/bom-card.json
 
       - name: Generate SBOM for website
-        run: cdxgen -r ./cornucopia.owasp.org -o output/bom-website.json
+        run: cdxgen -r ./cornucopia.owasp.org -o reports/bom-website.json
 
       - name: Generate SBOM for engine
-        run: cdxgen -r ./copi.owasp.org -o output/bom-engine.json
+        run: cdxgen -r ./copi.owasp.org -o reports/bom-engine.json
 
       - name: Upload SBOMs to Dependency-Track
         continue-on-error: true
@@ -39,11 +41,11 @@ jobs:
           DT_API_KEY: ${{ secrets.DEPENDENCYTRACK_API_KEY }}
         run: |
           declare -A NAMES=(
-            ["output/bom-card.json"]="owasp-cornucopia-card"
-            ["output/bom-engine.json"]="owasp-cornucopia-engine"
-            ["output/bom-website.json"]="owasp-cornucopia-website"
+            ["reports/bom-card.json"]="owasp-cornucopia-card"
+            ["reports/bom-engine.json"]="owasp-cornucopia-engine"
+            ["reports/bom-website.json"]="owasp-cornucopia-website"
           )
-          for bom in output/*.json; do
+          for bom in reports/*.json; do
             echo "--- Uploading $bom as ${NAMES[$bom]} ---"
             curl --location "$DT_URL/api/v1/bom" \
               --header "X-Api-Key: $DT_API_KEY" \
@@ -55,10 +57,11 @@ jobs:
             echo ""
           done
 
-      - name: Upload SBOMs as artifacts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - name: Create release
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
         with:
-          name: sboms
-          path: output/*
-
-          
+          draft: false
+          prerelease: true
+          tag_name: sbom-test-${{ github.sha }}
+          name: SBOM Test ${{ github.sha }}
+          files: reports/*.json
