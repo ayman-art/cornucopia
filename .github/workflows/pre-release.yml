@@ -3,7 +3,7 @@
     on:
       push:
         branches:
-          - "master"
+          - "feat/sbom"
     permissions:
       contents: read
     jobs:
