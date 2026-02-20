@@ -41,6 +41,7 @@
             continue-on-error: true
             run: pipenv run python -m unittest discover -s "tests/scripts" -p "*_itest.py"
           - name: Generate new output file
+            continue-on-error: true
             run: |
               #
               # Building EoP
