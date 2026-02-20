@@ -1,5 +1,6 @@
 name: SBOM Test
 on:
+  workflow_call:
   push:
     branches:
       - feat/sbom
