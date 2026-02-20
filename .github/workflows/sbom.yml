@@ -1,9 +1,6 @@
-name: SBOM Test
+name: SBOM
 on:
   workflow_call:
-  push:
-    branches:
-      - feat/sbom
 jobs:
   generate-sboms:
     runs-on: ubuntu-latest

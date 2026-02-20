@@ -142,7 +142,7 @@
       sbom:
         needs: hardening
         name: SBOM
-        uses: ./.github/workflows/sbom-test.yml
+        uses: ./.github/workflows/sbom.yml
         secrets: inherit
         permissions:
           contents: write
