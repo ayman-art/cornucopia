@@ -63,5 +63,4 @@ jobs:
         with:
           draft: false
           prerelease: true
-          name: SBOM Test ${{ github.sha }}
           files: reports/*.json
