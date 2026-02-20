@@ -63,6 +63,5 @@ jobs:
         with:
           draft: false
           prerelease: true
-          tag_name: sbom-test-${{ github.sha }}
           name: SBOM Test ${{ github.sha }}
           files: reports/*.json
