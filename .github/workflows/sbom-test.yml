@@ -33,6 +33,7 @@ jobs:
         run: cdxgen -r ./copi.owasp.org -o output/bom-engine.json
 
       - name: Upload SBOMs to Dependency-Track
+        continue-on-error: true
         env:
           DT_URL: ${{ secrets.DEPENDENCYTRACK_URL }}
           DT_API_KEY: ${{ secrets.DEPENDENCYTRACK_API_KEY }}
