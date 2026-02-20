@@ -104,19 +104,40 @@
             uses: actions/setup-node@v4
             with:
               node-version: '20'
-          - name: Generate SBOM for card
+          - name: Install cdxgen
             run: |
               npm install -g @cyclonedx/cdxgen
               mkdir -p reports
-          - name: Generate SBOM for card
-            uses: CycloneDX/cdxgen-action@5668048b6479c5ee557eec3e1766132a4661681f
-            with:
-              output: "./reports/bom-card.xml"
+          - name: Install cyclonedx-py
+            run: pip install cyclonedx-bom
+          - name: Generate SBOM for scripts
+            run: cyclonedx-py requirements requirements.txt -o reports/bom-card.json
           - name: Generate SBOM for website and engine
             run: |
               cdxgen -r ./cornucopia.owasp.org -o reports/bom-website.json
               cdxgen -r ./copi.owasp.org -o reports/bom-engine.json
-              
+          - name: Upload SBOMs to Dependency-Track
+            continue-on-error: true
+            env:
+              DT_URL: ${{ secrets.DEPENDENCYTRACK_URL }}
+              DT_API_KEY: ${{ secrets.DEPENDENCYTRACK_API_KEY }}
+            run: |
+              declare -A NAMES=(
+                ["reports/bom-card.json"]="owasp-cornucopia-card"
+                ["reports/bom-engine.json"]="owasp-cornucopia-engine"
+                ["reports/bom-website.json"]="owasp-cornucopia-website"
+              )
+              for bom in reports/*; do
+                echo "--- Uploading $bom as ${NAMES[$bom]} ---"
+                curl --location "$DT_URL/api/v1/bom" \
+                  --header "X-Api-Key: $DT_API_KEY" \
+                  --header "ngrok-skip-browser-warning: true" \
+                  --form "autoCreate=true" \
+                  --form "projectName=${NAMES[$bom]}" \
+                  --form "projectVersion=${{ github.ref_name }}" \
+                  --form "bom=@$bom"
+                echo ""
+              done    
           - name: Create release
             uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
             with:
