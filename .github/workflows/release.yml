@@ -143,3 +143,5 @@
         name: SBOM
         uses: ./.github/workflows/sbom-test.yml
         secrets: inherit
+        permissions:
+          contents: write
