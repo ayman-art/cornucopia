@@ -3,7 +3,7 @@
     on:
       push:
         branches:
-          - "feat/sbom"
+          - "master"
     permissions:
       contents: read
     jobs:
@@ -263,47 +263,7 @@
               zip -r output/owasp_cornucopia_webapp_2.2_it.zip output/cornucopia_webapp/Links/* output/cornucopia_webapp/Fonts/* output/cornucopia_webapp/owasp_cornucopia_webapp_2.2_cards_bridge_it.idml output/cornucopia_webapp/owasp_cornucopia_webapp_2.2_cards_bridge_qr_it.idml output/cornucopia_webapp/owasp_cornucopia_webapp_2.2_cards_tarot_it.idml output/cornucopia_webapp/owasp_cornucopia_webapp_2.2_cards_tarot_qr_it.idml output/cornucopia_webapp/owasp_cornucopia_webapp_2.2_leaflet_bridge_it.idml output/cornucopia_webapp/owasp_cornucopia_webapp_2.2_leaflet_tarot_it.idml ./resources/templates/owasp_cornucopia_webapp_scoresheet.pdf
 
               cp output/owasp_cornucopia_webapp_3.0_cards_bridge_en.idml output/owasp_cornucopia_webapp_3.0_cards_bridge_qr_en.idml output/owasp_cornucopia_webapp_3.0_cards_tarot_en.idml output/owasp_cornucopia_webapp_3.0_cards_tarot_qr_en.idml output/owasp_cornucopia_webapp_3.0_leaflet_bridge_en.idml output/owasp_cornucopia_webapp_3.0_leaflet_tarot_en.idml output/cornucopia_webapp/
-              zip -r output/owasp_cornucopia_webapp_3.0_en.zip output/cornucopia_webapp/Links/* output/cornucopia_webapp/Fonts/* output/cornucopia_webapp/owasp_cornucopia_webapp_3.0_cards_bridge_en.idml output/cornucopia_webapp/owasp_cornucopia_webapp_3.0_cards_bridge_qr_en.idml output/cornucopia_webapp/owasp_cornucopia_webapp_3.0_cards_tarot_en.idml output/cornucopia_webapp/owasp_cornucopia_webapp_3.0_cards_tarot_qr_en.idml output/cornucopia_webapp/owasp_cornucopia_webapp_3.0_leaflet_bridge_en.idml output/cornucopia_webapp/owasp_cornucopia_webapp_3.0_leaflet_tarot_en.idml ./resources/templates/owasp_cornucopia_webapp_scoresheet.pdf 
-          # Generate SBOMs
-          - name: Set up Node.js
-            uses: actions/setup-node@v4
-            with:
-              node-version: '20'
-          - name: Install cdxgen
-            run: |
-              npm install -g @cyclonedx/cdxgen
-              mkdir -p reports
-          - name: Install cyclonedx-py
-            run: pip install cyclonedx-bom
-          - name: Generate SBOM for scripts
-            run: cyclonedx-py requirements requirements.txt -o reports/bom-card.json
-          - name: Generate SBOM for website and engine
-            run: |
-              cdxgen -r ./cornucopia.owasp.org -o reports/bom-website.json
-              cdxgen -r ./copi.owasp.org -o reports/bom-engine.json
-          - name: Upload SBOMs to Dependency-Track
-            continue-on-error: true
-            env:
-              DT_URL: ${{ secrets.DEPENDENCYTRACK_URL }}
-              DT_API_KEY: ${{ secrets.DEPENDENCYTRACK_API_KEY }}
-            run: |
-              declare -A NAMES=(
-                ["reports/bom-card.json"]="owasp-cornucopia-card"
-                ["reports/bom-engine.json"]="owasp-cornucopia-engine"
-                ["reports/bom-website.json"]="owasp-cornucopia-website"
-              )
-              for bom in reports/*; do
-                echo "--- Uploading $bom as ${NAMES[$bom]} ---"
-                curl --location "$DT_URL/api/v1/bom" \
-                  --header "X-Api-Key: $DT_API_KEY" \
-                  --header "ngrok-skip-browser-warning: true" \
-                  --form "autoCreate=true" \
-                  --form "projectName=${NAMES[$bom]}" \
-                  --form "projectVersion=${{ github.ref_name }}" \
-                  --form "bom=@$bom"
-                echo ""
-              done
-          
+              zip -r output/owasp_cornucopia_webapp_3.0_en.zip output/cornucopia_webapp/Links/* output/cornucopia_webapp/Fonts/* output/cornucopia_webapp/owasp_cornucopia_webapp_3.0_cards_bridge_en.idml output/cornucopia_webapp/owasp_cornucopia_webapp_3.0_cards_bridge_qr_en.idml output/cornucopia_webapp/owasp_cornucopia_webapp_3.0_cards_tarot_en.idml output/cornucopia_webapp/owasp_cornucopia_webapp_3.0_cards_tarot_qr_en.idml output/cornucopia_webapp/owasp_cornucopia_webapp_3.0_leaflet_bridge_en.idml output/cornucopia_webapp/owasp_cornucopia_webapp_3.0_leaflet_tarot_en.idml ./resources/templates/owasp_cornucopia_webapp_scoresheet.pdf
           - name: Prepare release body with translation report
             id: prepare_release
             run: |
@@ -389,7 +349,6 @@
                 output/owasp_cornucopia_webapp_3.0_guide_bridge_en.pdf
                 output/owasp_cornucopia_webapp_3.0_guide_bridge_qr_en.odt
                 output/owasp_cornucopia_webapp_3.0_guide_bridge_qr_en.pdf
-                reports/*
                 resources/case/*\2.2_case_*
                 resources/case/*\1.1_case_*
                 source/*1\.1-*.yaml
@@ -399,3 +358,10 @@
                 zap-reports/copi_dast_report.json
                 zap-reports/copi_dast_report.xml
                 zap-reports/copi_dast_report.md
+      sbom:
+        needs: hardening
+        name: SBOM
+        uses: ./.github/workflows/sbom-test.yml
+        secrets: inherit
+        permissions:
+          contents: write

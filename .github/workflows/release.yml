@@ -140,6 +140,7 @@
                 source/*1\.1-*.yaml
                 source/*2\.2-*.yaml
       sbom:
+        needs: hardening
         name: SBOM
         uses: ./.github/workflows/sbom-test.yml
         secrets: inherit
